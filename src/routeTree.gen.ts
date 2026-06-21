@@ -9,38 +9,129 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as MinhasReservasRouteImport } from './routes/minhas-reservas'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as VagasVagaIdRouteImport } from './routes/vagas.$vagaId'
+import { Route as AdminReservasRouteImport } from './routes/admin.reservas'
+import { Route as AdminQuartosRouteImport } from './routes/admin.quartos'
 
+const MinhasReservasRoute = MinhasReservasRouteImport.update({
+  id: '/minhas-reservas',
+  path: '/minhas-reservas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const VagasVagaIdRoute = VagasVagaIdRouteImport.update({
+  id: '/vagas/$vagaId',
+  path: '/vagas/$vagaId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminReservasRoute = AdminReservasRouteImport.update({
+  id: '/reservas',
+  path: '/reservas',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminQuartosRoute = AdminQuartosRouteImport.update({
+  id: '/quartos',
+  path: '/quartos',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/minhas-reservas': typeof MinhasReservasRoute
+  '/admin/quartos': typeof AdminQuartosRoute
+  '/admin/reservas': typeof AdminReservasRoute
+  '/vagas/$vagaId': typeof VagasVagaIdRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/minhas-reservas': typeof MinhasReservasRoute
+  '/admin/quartos': typeof AdminQuartosRoute
+  '/admin/reservas': typeof AdminReservasRoute
+  '/vagas/$vagaId': typeof VagasVagaIdRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/minhas-reservas': typeof MinhasReservasRoute
+  '/admin/quartos': typeof AdminQuartosRoute
+  '/admin/reservas': typeof AdminReservasRoute
+  '/vagas/$vagaId': typeof VagasVagaIdRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/minhas-reservas'
+    | '/admin/quartos'
+    | '/admin/reservas'
+    | '/vagas/$vagaId'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/minhas-reservas'
+    | '/admin/quartos'
+    | '/admin/reservas'
+    | '/vagas/$vagaId'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/minhas-reservas'
+    | '/admin/quartos'
+    | '/admin/reservas'
+    | '/vagas/$vagaId'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  MinhasReservasRoute: typeof MinhasReservasRoute
+  VagasVagaIdRoute: typeof VagasVagaIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/minhas-reservas': {
+      id: '/minhas-reservas'
+      path: '/minhas-reservas'
+      fullPath: '/minhas-reservas'
+      preLoaderRoute: typeof MinhasReservasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +139,56 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/vagas/$vagaId': {
+      id: '/vagas/$vagaId'
+      path: '/vagas/$vagaId'
+      fullPath: '/vagas/$vagaId'
+      preLoaderRoute: typeof VagasVagaIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/reservas': {
+      id: '/admin/reservas'
+      path: '/reservas'
+      fullPath: '/admin/reservas'
+      preLoaderRoute: typeof AdminReservasRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/quartos': {
+      id: '/admin/quartos'
+      path: '/quartos'
+      fullPath: '/admin/quartos'
+      preLoaderRoute: typeof AdminQuartosRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminQuartosRoute: typeof AdminQuartosRoute
+  AdminReservasRoute: typeof AdminReservasRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminQuartosRoute: AdminQuartosRoute,
+  AdminReservasRoute: AdminReservasRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  MinhasReservasRoute: MinhasReservasRoute,
+  VagasVagaIdRoute: VagasVagaIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
