@@ -5,21 +5,24 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { quartos, featureLabel, formatBRL, type VagaFeature } from "@/lib/hostel-data";
+import { quartos, featureLabel, formatBRL, camaTipoLabel, camaTipoShort, type VagaFeature, type CamaTipo } from "@/lib/hostel-data";
 import { BedDouble, Bath, Users, Sun, Search, MapPin, ShieldCheck, Clock } from "lucide-react";
+import rioHero from "@/assets/rio-hero.jpg";
+import rioBeach from "@/assets/rio-beach.jpg";
+import rioSelaron from "@/assets/rio-selaron.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Reservar vaga — Albergue Almeida" },
-      { name: "description", content: "Busque vagas disponíveis em quartos com ou sem banheiro. Reserve em minutos." },
+      { title: "Reservar cama — Albergue Almeida · Rio de Janeiro" },
+      { name: "description", content: "Reserve sua cama em quartos compartilhados ou privativos no Rio de Janeiro. Solteiro, casal ou beliche." },
     ],
   }),
   component: HomePage,
 });
 
 type Banheiro = "todos" | "com" | "sem";
+type TipoFiltro = "todos" | CamaTipo;
 
 function todayISO(offset = 0) {
   const d = new Date();
@@ -31,6 +34,7 @@ function HomePage() {
   const [inicio, setInicio] = useState(todayISO(1));
   const [dias, setDias] = useState(2);
   const [banheiro, setBanheiro] = useState<Banheiro>("todos");
+  const [tipo, setTipo] = useState<TipoFiltro>("todos");
   const [features, setFeatures] = useState<Set<VagaFeature>>(new Set());
   const [searched, setSearched] = useState(false);
 
@@ -48,11 +52,12 @@ function HomePage() {
         vagas: q.vagas.filter(
           (v) =>
             v.disponivel &&
+            (tipo === "todos" || v.tipo === tipo) &&
             [...features].every((f) => v.features.includes(f)),
         ),
       }))
       .filter((q) => q.vagas.length > 0);
-  }, [banheiro, features]);
+  }, [banheiro, tipo, features]);
 
   const totalVagas = resultados.reduce((s, q) => s + q.vagas.length, 0);
 
@@ -65,29 +70,48 @@ function HomePage() {
     });
   }
 
+  const tipos: TipoFiltro[] = ["todos", "solteiro", "casal", "beliche-inferior", "beliche-superior"];
+
   return (
     <div className="min-h-screen">
       <SiteHeader />
 
-      {/* Hero */}
-      <section className="border-b border-border bg-gradient-to-b from-secondary/60 to-background">
-        <div className="mx-auto max-w-6xl px-6 pt-16 pb-10">
+      {/* Hero com fotos do Rio */}
+      <section className="relative overflow-hidden border-b border-border">
+        <div className="absolute inset-0">
+          <img
+            src={rioHero}
+            alt="Vista panorâmica do Rio de Janeiro com Cristo Redentor"
+            className="w-full h-full object-cover"
+            width={1792}
+            height={1024}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent" />
+        </div>
+
+        <div className="relative mx-auto max-w-6xl px-6 pt-20 pb-12 grid lg:grid-cols-[1.2fr_1fr] gap-10 items-center">
           <div className="max-w-2xl">
             <span className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-primary">
-              <MapPin className="size-3.5" /> Rua das Acácias, 142
+              <MapPin className="size-3.5" /> Santa Teresa · Rio de Janeiro
             </span>
             <h1 className="font-display text-5xl md:text-6xl mt-3 leading-[1.05]">
-              Uma cama boa, no quarto certo, pelo tempo que precisar.
+              Sua cama no coração do Rio, pelo tempo que precisar.
             </h1>
-            <p className="text-muted-foreground mt-4 text-lg">
-              Escolha sua vaga sabendo se é beliche de cima, perto da janela ou no quarto com banheiro.
-              Diárias do meio-dia ao meio-dia.
+            <p className="text-foreground/70 mt-4 text-lg">
+              Escolha sua cama — solteiro, casal ou beliche — sabendo se é perto da janela,
+              se pega sol da manhã ou se está no quarto com banheiro. Diárias do meio-dia ao meio-dia.
             </p>
+          </div>
+
+          <div className="hidden lg:grid grid-cols-2 gap-3">
+            <img src={rioBeach} alt="Calçadão de Copacabana" loading="lazy" className="w-full h-44 object-cover rounded-2xl shadow-lg" />
+            <img src={rioSelaron} alt="Escadaria Selarón" loading="lazy" className="w-full h-44 object-cover rounded-2xl shadow-lg mt-8" />
           </div>
         </div>
 
         {/* Search card */}
-        <div className="mx-auto max-w-6xl px-6 pb-12">
+        <div className="relative mx-auto max-w-6xl px-6 pb-12">
           <div className="bg-card border border-border rounded-2xl shadow-sm p-5 md:p-6">
             <div className="grid md:grid-cols-[1fr_1fr_1fr_auto] gap-4 items-end">
               <div>
@@ -99,7 +123,7 @@ function HomePage() {
                 <Input id="dias" type="number" min={1} max={60} value={dias} onChange={(e) => setDias(Math.max(1, +e.target.value || 1))} className="mt-1.5" />
               </div>
               <div>
-                <Label className="text-xs">Banheiro</Label>
+                <Label className="text-xs">Banheiro no quarto</Label>
                 <div className="mt-1.5 inline-flex rounded-md border border-input bg-background p-1 w-full">
                   {(["todos", "com", "sem"] as Banheiro[]).map((b) => (
                     <button
@@ -113,12 +137,34 @@ function HomePage() {
                 </div>
               </div>
               <Button size="lg" onClick={() => setSearched(true)} className="md:w-auto w-full">
-                <Search className="size-4" /> Buscar vagas
+                <Search className="size-4" /> Buscar camas
               </Button>
             </div>
 
             <div className="mt-5 pt-5 border-t border-border">
-              <div className="text-xs text-muted-foreground mb-2">Preferências da vaga</div>
+              <div className="text-xs text-muted-foreground mb-2">Tipo de cama</div>
+              <div className="flex flex-wrap gap-2">
+                {tipos.map((t) => {
+                  const active = tipo === t;
+                  return (
+                    <button
+                      key={t}
+                      onClick={() => setTipo(t)}
+                      className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                        active
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "border-border hover:border-primary/50"
+                      }`}
+                    >
+                      {t === "todos" ? "Todas" : camaTipoLabel[t]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-5 pt-5 border-t border-border">
+              <div className="text-xs text-muted-foreground mb-2">Preferências da cama</div>
               <div className="flex flex-wrap gap-2">
                 {(Object.keys(featureLabel) as VagaFeature[]).map((f) => {
                   const active = features.has(f);
@@ -151,9 +197,9 @@ function HomePage() {
       <section className="mx-auto max-w-6xl px-6 py-12">
         <div className="flex items-end justify-between mb-6">
           <div>
-            <h2 className="font-display text-3xl">Vagas disponíveis</h2>
+            <h2 className="font-display text-3xl">Camas disponíveis</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              {searched ? `${totalVagas} vaga(s) em ${resultados.length} quarto(s)` : `Veja a disponibilidade do nosso albergue`}
+              {searched ? `${totalVagas} cama(s) em ${resultados.length} quarto(s)` : `Veja a disponibilidade do nosso albergue`}
             </p>
           </div>
         </div>
@@ -165,7 +211,7 @@ function HomePage() {
                 <div>
                   <h3 className="font-display text-2xl flex items-center gap-3">
                     {q.nome}
-                    <Badge variant="secondary" className="font-sans font-medium">{q.capacidade} vagas</Badge>
+                    <Badge variant="secondary" className="font-sans font-medium">{q.capacidade} camas</Badge>
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1 max-w-xl">{q.descricao}</p>
                 </div>
@@ -189,8 +235,8 @@ function HomePage() {
                   >
                     <div className="flex items-start justify-between">
                       <div>
-                        <div className="text-xs uppercase tracking-wider text-muted-foreground">Vaga</div>
-                        <div className="font-display text-xl">Nº {v.numero.toString().padStart(2, "0")}</div>
+                        <div className="text-xs uppercase tracking-wider text-muted-foreground">Cama Nº {v.numero.toString().padStart(2, "0")}</div>
+                        <div className="font-display text-xl mt-0.5">{camaTipoShort[v.tipo]}</div>
                       </div>
                       <BedDouble className="size-5 text-primary" />
                     </div>
@@ -217,7 +263,7 @@ function HomePage() {
           {resultados.length === 0 && (
             <div className="text-center py-16 bg-card border border-dashed border-border rounded-2xl">
               <Sun className="size-8 mx-auto text-muted-foreground" />
-              <p className="mt-3 text-muted-foreground">Nenhuma vaga corresponde a esses filtros. Tente ajustar suas preferências.</p>
+              <p className="mt-3 text-muted-foreground">Nenhuma cama corresponde a esses filtros. Tente ajustar suas preferências.</p>
             </div>
           )}
         </div>
@@ -225,7 +271,7 @@ function HomePage() {
 
       <footer className="border-t border-border bg-card mt-12">
         <div className="mx-auto max-w-6xl px-6 py-8 text-sm text-muted-foreground flex flex-wrap justify-between gap-4">
-          <span>© Albergue Almeida · Rua das Acácias, 142</span>
+          <span>© Albergue Almeida · Santa Teresa, Rio de Janeiro</span>
           <span>Diárias do meio-dia ao meio-dia · Pagamento em cartão de crédito</span>
         </div>
       </footer>
@@ -237,6 +283,3 @@ function fmt(iso: string) {
   const [y, m, d] = iso.split("-");
   return `${d}/${m}/${y}`;
 }
-
-// keep Checkbox import used (avoid TS unused warning)
-void Checkbox;
