@@ -7,8 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { findVaga, featureLabel, formatBRL } from "@/lib/hostel-data";
+import { findVaga, featureLabel, formatBRL, camaTipoLabel } from "@/lib/hostel-data";
 import { ArrowLeft, Bath, BedDouble, CreditCard, ShieldCheck, Users, Check } from "lucide-react";
+
 
 const searchSchema = z.object({
   inicio: z.string().optional(),
@@ -71,19 +72,21 @@ function VagaPage() {
         <div className="mt-6 grid lg:grid-cols-[1fr_380px] gap-8">
           <div>
             <div className="text-xs uppercase tracking-widest text-primary">{quarto.nome}</div>
-            <h1 className="font-display text-4xl mt-1">Vaga Nº {vaga.numero.toString().padStart(2, "0")}</h1>
+            <h1 className="font-display text-4xl mt-1">Cama Nº {vaga.numero.toString().padStart(2, "0")} · {camaTipoLabel[vaga.tipo]}</h1>
             <div className="flex flex-wrap gap-2 mt-3 text-xs">
-              <Badge variant="secondary"><Users className="size-3.5 mr-1" />{quarto.capacidade} vagas no quarto</Badge>
+              <Badge><BedDouble className="size-3.5 mr-1" />{camaTipoLabel[vaga.tipo]}</Badge>
+              <Badge variant="secondary"><Users className="size-3.5 mr-1" />{quarto.capacidade} camas no quarto</Badge>
               <Badge variant={quarto.banheiro ? "default" : "secondary"}>
                 <Bath className="size-3.5 mr-1" />{quarto.banheiro ? "Banheiro privativo" : "Banheiro compartilhado"}
               </Badge>
             </div>
 
+
             <p className="mt-6 text-muted-foreground">{quarto.descricao}</p>
 
             <Separator className="my-8" />
 
-            <h2 className="font-display text-2xl">Detalhes desta vaga</h2>
+            <h2 className="font-display text-2xl">Detalhes desta cama</h2>
             <ul className="mt-4 grid sm:grid-cols-2 gap-2">
               {vaga.features.map((f) => (
                 <li key={f} className="flex items-center gap-2 p-3 bg-card border border-border rounded-lg">
@@ -183,7 +186,7 @@ function VagaPage() {
                   <h3 className="font-display text-xl mt-3">Reserva confirmada</h3>
                   <p className="text-sm text-muted-foreground mt-1">Enviamos os detalhes para {email}.</p>
                   <div className="mt-4 text-sm bg-secondary/60 rounded-lg p-3 text-left">
-                    <div><span className="text-muted-foreground">Vaga:</span> {quarto.nome} · Nº {vaga.numero}</div>
+                    <div><span className="text-muted-foreground">Cama:</span> {quarto.nome} · Nº {vaga.numero} ({camaTipoLabel[vaga.tipo]})</div>
                     <div><span className="text-muted-foreground">Período:</span> {fmt(inicio)} → {fmt(fim)}</div>
                     <div><span className="text-muted-foreground">Total:</span> {formatBRL(total)}</div>
                   </div>
@@ -192,7 +195,7 @@ function VagaPage() {
               )}
             </div>
             <div className="flex items-center gap-2 mt-3 text-xs text-muted-foreground">
-              <BedDouble className="size-3.5" /> Quarto {quarto.nome} · {quarto.capacidade} vagas
+              <BedDouble className="size-3.5" /> Quarto {quarto.nome} · {quarto.capacidade} camas
             </div>
           </aside>
         </div>
