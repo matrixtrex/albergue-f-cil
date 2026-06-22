@@ -1,6 +1,6 @@
+export type CamaTipo = "solteiro" | "casal" | "beliche-superior" | "beliche-inferior";
+
 export type VagaFeature =
-  | "beliche-cima"
-  | "beliche-baixo"
   | "perto-janela"
   | "perto-porta"
   | "sol-manha"
@@ -11,6 +11,7 @@ export type VagaFeature =
 export interface Vaga {
   id: string;
   numero: number;
+  tipo: CamaTipo;
   features: VagaFeature[];
   disponivel: boolean;
   precoDiaria: number;
@@ -27,18 +28,21 @@ export interface Quarto {
 
 const feat = (...f: VagaFeature[]) => f;
 
+const belicheTipo = (i: number): CamaTipo =>
+  i % 2 === 0 ? "beliche-inferior" : "beliche-superior";
+
 export const quartos: Quarto[] = [
   {
     id: "q1",
     nome: "Quarto Alecrim",
     capacidade: 4,
     banheiro: true,
-    descricao: "Quarto compacto com banheiro privativo e sol da manhã.",
+    descricao: "Quarto compacto com banheiro privativo e sol da manhã. Mix de cama de solteiro e beliche.",
     vagas: [
-      { id: "q1-v1", numero: 1, disponivel: true, precoDiaria: 90, features: feat("beliche-baixo", "perto-janela", "sol-manha", "tomada-individual") },
-      { id: "q1-v2", numero: 2, disponivel: true, precoDiaria: 85, features: feat("beliche-cima", "perto-janela", "sol-manha", "luz-leitura") },
-      { id: "q1-v3", numero: 3, disponivel: false, precoDiaria: 90, features: feat("beliche-baixo", "perto-porta", "tomada-individual") },
-      { id: "q1-v4", numero: 4, disponivel: true, precoDiaria: 85, features: feat("beliche-cima", "perto-porta", "luz-leitura") },
+      { id: "q1-v1", numero: 1, tipo: "solteiro", disponivel: true, precoDiaria: 110, features: feat("perto-janela", "sol-manha", "tomada-individual", "luz-leitura") },
+      { id: "q1-v2", numero: 2, tipo: "casal", disponivel: true, precoDiaria: 180, features: feat("perto-janela", "sol-manha", "tomada-individual", "luz-leitura") },
+      { id: "q1-v3", numero: 3, tipo: "beliche-inferior", disponivel: false, precoDiaria: 85, features: feat("perto-porta", "tomada-individual") },
+      { id: "q1-v4", numero: 4, tipo: "beliche-superior", disponivel: true, precoDiaria: 75, features: feat("perto-porta", "luz-leitura") },
     ],
   },
   {
@@ -46,14 +50,14 @@ export const quartos: Quarto[] = [
     nome: "Quarto Manjericão",
     capacidade: 8,
     banheiro: false,
-    descricao: "Dormitório compartilhado amplo, ventilado, sem sol direto.",
+    descricao: "Dormitório compartilhado amplo, ventilado, com beliches e camas de solteiro.",
     vagas: Array.from({ length: 8 }).map((_, i) => ({
       id: `q2-v${i + 1}`,
       numero: i + 1,
+      tipo: i < 2 ? "solteiro" as CamaTipo : belicheTipo(i),
       disponivel: i % 3 !== 0,
-      precoDiaria: 65,
+      precoDiaria: i < 2 ? 80 : i % 2 === 0 ? 65 : 55,
       features: feat(
-        i % 2 === 0 ? "beliche-baixo" : "beliche-cima",
         i < 2 ? "perto-janela" : i > 5 ? "perto-porta" : "sem-sol",
         "tomada-individual",
       ),
@@ -64,14 +68,14 @@ export const quartos: Quarto[] = [
     nome: "Quarto Hortelã",
     capacidade: 12,
     banheiro: true,
-    descricao: "Dormitório grande com dois banheiros e área de bagagem.",
+    descricao: "Dormitório grande com dois banheiros, beliches e área de bagagem.",
     vagas: Array.from({ length: 12 }).map((_, i) => ({
       id: `q3-v${i + 1}`,
       numero: i + 1,
+      tipo: belicheTipo(i),
       disponivel: i % 4 !== 0,
-      precoDiaria: 75,
+      precoDiaria: i % 2 === 0 ? 75 : 65,
       features: feat(
-        i % 2 === 0 ? "beliche-baixo" : "beliche-cima",
         i < 4 ? "sol-manha" : "sem-sol",
         i % 3 === 0 ? "perto-janela" : "perto-porta",
         "luz-leitura",
@@ -84,26 +88,17 @@ export const quartos: Quarto[] = [
     nome: "Quarto Lavanda",
     capacidade: 4,
     banheiro: true,
-    descricao: "Quarto íntimo com banheiro, ideal para grupos pequenos.",
-    vagas: Array.from({ length: 4 }).map((_, i) => ({
-      id: `q4-v${i + 1}`,
-      numero: i + 1,
-      disponivel: true,
-      precoDiaria: 95,
-      features: feat(
-        i % 2 === 0 ? "beliche-baixo" : "beliche-cima",
-        i < 2 ? "perto-janela" : "perto-porta",
-        "sol-manha",
-        "luz-leitura",
-        "tomada-individual",
-      ),
-    })),
+    descricao: "Quarto íntimo com banheiro, cama de casal e camas de solteiro.",
+    vagas: [
+      { id: "q4-v1", numero: 1, tipo: "casal", disponivel: true, precoDiaria: 190, features: feat("perto-janela", "sol-manha", "luz-leitura", "tomada-individual") },
+      { id: "q4-v2", numero: 2, tipo: "solteiro", disponivel: true, precoDiaria: 110, features: feat("perto-janela", "sol-manha", "luz-leitura", "tomada-individual") },
+      { id: "q4-v3", numero: 3, tipo: "solteiro", disponivel: true, precoDiaria: 105, features: feat("perto-porta", "sol-manha", "luz-leitura", "tomada-individual") },
+      { id: "q4-v4", numero: 4, tipo: "solteiro", disponivel: true, precoDiaria: 105, features: feat("perto-porta", "luz-leitura", "tomada-individual") },
+    ],
   },
 ];
 
 export const featureLabel: Record<VagaFeature, string> = {
-  "beliche-cima": "Beliche · cama de cima",
-  "beliche-baixo": "Beliche · cama de baixo",
   "perto-janela": "Perto da janela",
   "perto-porta": "Perto da porta",
   "sol-manha": "Sol da manhã",
@@ -112,14 +107,28 @@ export const featureLabel: Record<VagaFeature, string> = {
   "luz-leitura": "Luz de leitura",
 };
 
+export const camaTipoLabel: Record<CamaTipo, string> = {
+  "solteiro": "Cama de solteiro",
+  "casal": "Cama de casal",
+  "beliche-superior": "Beliche · superior",
+  "beliche-inferior": "Beliche · inferior",
+};
+
+export const camaTipoShort: Record<CamaTipo, string> = {
+  "solteiro": "Solteiro",
+  "casal": "Casal",
+  "beliche-superior": "Beliche sup.",
+  "beliche-inferior": "Beliche inf.",
+};
+
 export interface Reserva {
   id: string;
   hospede: string;
   email: string;
   vagaId: string;
   quartoId: string;
-  inicio: string; // ISO date
-  fim: string; // ISO date
+  inicio: string;
+  fim: string;
   diarias: number;
   total: number;
   status: "confirmada" | "cancelada" | "concluida";
@@ -136,7 +145,7 @@ export const reservasMock: Reserva[] = [
     inicio: "2026-06-19",
     fim: "2026-06-23",
     diarias: 4,
-    total: 360,
+    total: 340,
     status: "confirmada",
     criadaEm: "2026-06-10",
   },
@@ -149,7 +158,7 @@ export const reservasMock: Reserva[] = [
     inicio: "2026-06-22",
     fim: "2026-06-28",
     diarias: 6,
-    total: 390,
+    total: 480,
     status: "confirmada",
     criadaEm: "2026-06-15",
   },
